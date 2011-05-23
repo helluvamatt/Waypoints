@@ -4,5 +4,7 @@ bin/*
 # Ignore libraries (that can be obtained elsewhere)
 lib/*
 
-# Ignore Eclipse Settings
+# Ignore Eclipse Stuff (Because it contains stuff specific to one machine)
 .settings/*
+.classpath
+.project
