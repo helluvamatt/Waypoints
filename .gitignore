@@ -1,0 +1,8 @@
+# Ignore compiled binaries
+bin/*
+
+# Ignore libraries (that can be obtained elsewhere)
+lib/*
+
+# Ignore Eclipse Settings
+.settings/*
