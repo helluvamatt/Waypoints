@@ -46,33 +46,50 @@ public class WaypointsPlugin extends JavaPlugin {
 	}
 
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		Player player = null;
 		String commandName = command.getName();
-
-		if (sender instanceof Player) {
-			player = (Player) sender;
-		} else {
-			sender.sendMessage(ChatColor.RED + "Command can only be used by players!");
-			return false;
-		}
-		
 		if (COMMAND_WAYPOINT.compareToIgnoreCase(commandName) == 0) {
-			if (args.length > 2) {
+			
+			Player player = null;
+			if (sender instanceof Player) {
+				player = (Player) sender;
+			} else {
+				sender.sendMessage(ChatColor.RED + "Command can only be used by players!");
+				return true;
+			}
+			
+			if (args.length > 1) {
 				
-				// TODO Continue parsing command arguments to create or delete a waypoint based on the player's current location.
+				String name = args[1];
+				String desc = "";
 				
-				// TODO Check permission for admin commands: delete unowned (more?)
-				
-				// Check permission for basic creation
-				if (handler.has(player, "waypoints.create")) {
-					
-				} else {
-					player.sendMessage(ChatColor.RED + "You do not have the proper permission to do that!");
+				if (args.length > 2) {
+					desc = args[2];
 				}
 				
+				// TODO Continue parsing command arguments to create or delete a waypoint based on the player's current location.
+				if (COMMAND_WAYPOINT_DELETE.compareToIgnoreCase(args[0]) == 0) {
+					// Waypoint delete
+					// 1. Check if the waypoint exists (SQL: SELECT FOR UPDATE)
+					// 2. Check if the owner is our current user (or has 'waypoint.admin' permission
+					// 3. Delete the waypoint from the database
+					
+					// TODO Check permission for admin commands: delete unowned (more?)
+					
+				} else if (COMMAND_WAYPOINT_CREATE.compareToIgnoreCase(args[0]) == 0) {
+					// Check permission for basic creation
+					if (handler.has(player, "waypoints.create")) {
+						// Waypoint create
+						// 1. Insert waypoint record into database.
+					} else {
+						player.sendMessage(ChatColor.RED + "You do not have the proper permission to do that!");
+					}
+				} else {
+					player.sendMessage(ChatColor.RED + "Usage: /waypoint create|delete <name> [<description>]");
+				}
 			} else {
 				player.sendMessage(ChatColor.RED + "Usage: /waypoint create|delete <name> [<description>]");
 			}
+			return true;
 		}
 		return false;
 	}
