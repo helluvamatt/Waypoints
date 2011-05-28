@@ -1,3 +1,19 @@
 name: Waypoints
 main: com.schneenet.minecraft.waypoints.WaypointsPlugin
 version: 0.1
+authors:
+    - helluvamatt
+website: http://minecraft.schneenet.com
+description: >
+             Create points of interest (POIs) with signs or a command in game, teleport back to them, and show them off on Minecraft Overviewer!
+commands:
+  waypoint:
+    description: Create or delete waypoints
+    usage: |
+           /waypoint create <name> [<description>] | Create a new waypoint
+           /waypoint delete <name> | Delete an existing waypoint
+  wplist:
+    description: >
+                 List the waypoints on the server
+    usage: |
+           /wplist [<page> [<count>]] | List the waypoints on the server

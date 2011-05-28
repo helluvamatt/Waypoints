@@ -1,8 +1,8 @@
 storage:
     engine:
         type: 'sql'
-	    dbms: 'com.mysql.jdbc.Driver'
-	    uri: 'jdbc:mysql://localhost:3306/mcwaypoints'
+	    dbms: 'MYSQL'
+	    url: 'jdbc:mysql://localhost:3306/mcwaypoints'
 	    username: 'dbuser'
 	    password: 'dbpass'
 		

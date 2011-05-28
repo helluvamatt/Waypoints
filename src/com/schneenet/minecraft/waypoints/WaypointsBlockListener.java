@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
+import com.schneenet.minecraft.waypoints.storage.Waypoint;
+
 public class WaypointsBlockListener extends BlockListener {
 	
 	private WaypointsPlugin plugin;
@@ -23,7 +25,8 @@ public class WaypointsBlockListener extends BlockListener {
 				String name = e.getLine(1);
 				String desc = e.getLine(2) + e.getLine(3);
 				Location loc = e.getBlock().getLocation();
-				// TODO Make a new waypoint
+				Waypoint waypoint = new Waypoint(name, desc, player, player.getWorld(), loc);
+				plugin.getWaypointStorage().add(waypoint);
 				e.setLine(0, WAYPOINT_SIGN);
 			}
 		}

@@ -2,49 +2,72 @@ package com.schneenet.minecraft.waypoints.storage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.sqlite.SQLiteDataSource;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 public class WaypointStorageSQL implements WaypointStorage {
-
-	private static final String SQL_WAYPOINT_ADD = "INSERT INTO ";
-	private static final String SQL_WAYPOINT_DELETE = "";
-	private static final String SQL_WAYPOINT_FIND_ONE = "";
-	private static final String SQL_WAYPOINT_FIND_ALL = "";
-	private static final String SQL_WAYPOINT_FIND_USER = "";
 	
-	private static final String SQL_USERS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS WpUsers (" +
-			"username VARCHAR(32) NOT NULL UNIQUE" +
-			")";
+	private static final String SQL_WAYPOINT_ADD = "INSERT INTO WpWaypoints (name, owner, description, world, loc_x, loc_y, loc_z) VALUES (?,?,?,?,?,?,?)";
+	private static final String SQL_WAYPOINT_DELETE = "DELETE FROM WpWaypoints WHERE name = ?";
+	private static final String SQL_WAYPOINT_FIND_ONE = "SELECT * FROM WpWaypoints WHERE name = ?";
+	private static final String SQL_WAYPOINT_FIND_ALL = "SELECT * FROM WpWaypoints";
+	private static final String SQL_WAYPOINT_FIND_ALL_PAGE = "SELECT * FROM WpWaypoints LIMIT ? OFFSET ?";
+	private static final String SQL_WAYPOINT_FIND_USER = "SELECT * FROM WpWaypoints WHERE owner = ?";
+	
 	private static final String SQL_WAYPOINTS_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS WpWaypoints (" +
 			"name VARCHAR(32) NOT NULL PRIMARY KEY UNIQUE, " +
 			"owner VARCHAR(32) NOT NULL, " +
 			"description TEXT DEFAULT NULL, " +
-			"loc_x FLOAT NOT NULL, " +
-			"loc_y FLOAT NOT NULL, " +
-			"loc_z FLOAT NOT NULL" +
+			"world VARCHAR(32) NOT NULL, " +
+			"loc_x DOUBLE NOT NULL, " +
+			"loc_y DOUBLE NOT NULL, " +
+			"loc_z DOUBLE NOT NULL" +
 			")";
 	
 	private static Dbms dbms;
 	private static DataSource dbSource;
 	private static Connection dbConn;
 	private static Logger logger;
+	private static Server server;
 
+	@Override
+	public void init(Server s) {
+		server = s;
+		logger = server.getLogger();
+	}
+	
 	@Override
 	public void add(Waypoint waypoint) {
 		try {
 			PreparedStatement ps = dbConn.prepareStatement(SQL_WAYPOINT_ADD);
-			
+			ps.setString(1, waypoint.getName());
+			ps.setString(2, waypoint.getOwner().getName());
+			ps.setString(3, waypoint.getDescription());
+			ps.setString(4, waypoint.getWorld().getName());
+			ps.setDouble(5, waypoint.getLocation().getX());
+			ps.setDouble(6, waypoint.getLocation().getY());
+			ps.setDouble(7, waypoint.getLocation().getZ());
+			if (ps.executeUpdate() == 1) {
+				waypoint.getOwner().sendMessage("Successfully created waypoint '" + ChatColor.AQUA + waypoint.getName() + ChatColor.WHITE + "'!");
+			} else {
+				waypoint.getOwner().sendMessage(ChatColor.RED + "There is already a waypoint with that name.");
+			}
 		} catch (SQLException e) {
+			waypoint.getOwner().sendMessage(ChatColor.RED + "There was a problem creating the waypoint.");
 			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
 		}
 
@@ -52,45 +75,105 @@ public class WaypointStorageSQL implements WaypointStorage {
 
 	@Override
 	public void delete(Waypoint waypoint) {
-		// TODO Auto-generated method stub
-
+		PreparedStatement ps;
+		try {
+			ps = dbConn.prepareStatement(SQL_WAYPOINT_DELETE);
+			ps.setString(1, waypoint.getName());
+			if (ps.executeUpdate() == 1) {
+				waypoint.getOwner().sendMessage("Successfully deleted waypoint '" + ChatColor.AQUA + waypoint.getName() + ChatColor.WHITE + "'!");
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}
 	}
 
 	@Override
-	public Waypoint find(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public Waypoint find(String name) throws WaypointNotFoundException {
+		PreparedStatement ps;
+		try {
+			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ONE);
+			ps.setString(1, name);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return Waypoint.build(server, rs.getString("name"), rs.getString("desc"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z"));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}
+		throw new WaypointNotFoundException();
 	}
 
 	@Override
 	public List<Waypoint> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
+		PreparedStatement ps;
+		try {
+			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ALL);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				list.add(Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z")));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}	
+		return list;
 	}
 
 	@Override
+	public List<Waypoint> findAllPage(int page, int size) {
+		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
+		PreparedStatement ps;
+		try {
+			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ALL_PAGE);
+			ps.setInt(1, size);
+			ps.setInt(2, (page - 1) * size);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				list.add(Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z")));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}	
+		return list;
+	}
+	
+	@Override
 	public List<Waypoint> findAllByUser(Player player) {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
+		PreparedStatement ps;
+		try {
+			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_USER);
+			ps.setString(1, player.getName());
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				list.add(Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z")));
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}	
+		return list;
 	}
 
 	@Override
 	public boolean load() {
-		// Do nothing, find** functions operate directly on the Database
+		// Don't do anything, we operate directly on the database
 		return true;
 	}
 
 	@Override
 	public boolean save() {
-		// Don't do anything, changes are saved immediately upon adding or
-		// deleting
+		// Don't do anything, we operate directly on the database
 		return true;
 	}
 	
-	public void init(String dbmsName, String uri, String username, String password, Logger log) throws Exception {
+	public void initSql(String dbmsName, String uri, String username, String password) throws Exception {
+		logger.log(Level.INFO, "[WaypointStorageSQL] Initializing SQL storage...");
+		logger.info("[WaypointStorageSQL] Trying DBMS Driver: \"" + dbmsName + "\"");
 		try {
 			dbms = Dbms.valueOf(dbmsName);
 		} catch (IllegalArgumentException e) {
+			logger.warning("[WaypointStorageSQL] Invalid DBMS from config. Defaulting to SQLITE...");
+			
 			dbms = Dbms.SQLITE;
 		}
 		try {
@@ -100,7 +183,10 @@ public class WaypointStorageSQL implements WaypointStorage {
 		}
 		dbSource = dbms.getDataSource(username, password, uri);
 		dbConn = dbSource.getConnection();
-		logger = log;
+		Statement stmt = dbConn.createStatement();
+		stmt.addBatch(SQL_WAYPOINTS_TABLE_CREATE);
+		stmt.executeBatch();
+		logger.log(Level.INFO, "[WaypointStorageSQL] SQL storage initialized.");
 	}
 
 	public static enum Dbms {
