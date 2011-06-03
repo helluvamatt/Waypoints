@@ -8,12 +8,14 @@ description: >
              Create points of interest (POIs) with signs or a command in game, teleport back to them, and show them off on Minecraft Overviewer!
 commands:
   waypoint:
-    description: Create or delete waypoints
+    description: Manage waypoints
     usage: |
-           /waypoint create <name> [<description>] | Create a new waypoint
-           /waypoint delete <name> | Delete an existing waypoint
-  wplist:
-    description: >
-                 List the waypoints on the server
-    usage: |
-           /wplist [<page> [<count>]] | List the waypoints on the server
+           /waypoint create <name> | Create a new waypoint
+           /waypoint select <name> | Select an existing waypoint
+           /waypoint deselect | Select no waypoint (deselect) 
+           /waypoint delete | Delete the selected waypoint
+           /waypoint describe <description> | Describe the selected waypoint
+           /waypoint move | Move the waypoint to the player's location
+           /waypoint goto | Teleport to the selected waypoint
+           /waypoint list [<page> [<count>]] | List the waypoints on the server
+           /waypoint <name> | Teleport to the specified waypoint

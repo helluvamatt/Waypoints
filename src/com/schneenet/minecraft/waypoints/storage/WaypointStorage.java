@@ -2,6 +2,7 @@ package com.schneenet.minecraft.waypoints.storage;
 
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -17,7 +18,8 @@ public interface WaypointStorage {
 	public boolean load();
 	public boolean save();
 	
-	public void add(Waypoint waypoint);
-	public void delete(Waypoint waypoint);
+	public boolean add(Waypoint waypoint);
+	public boolean delete(Waypoint waypoint);
+	public boolean edit(Waypoint waypoint, String newDescription, Location newLoc);
 	
 }

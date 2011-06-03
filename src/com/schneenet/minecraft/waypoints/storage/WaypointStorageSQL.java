@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.sqlite.SQLiteDataSource;
@@ -22,6 +22,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 public class WaypointStorageSQL implements WaypointStorage {
 	
 	private static final String SQL_WAYPOINT_ADD = "INSERT INTO WpWaypoints (name, owner, description, world, loc_x, loc_y, loc_z) VALUES (?,?,?,?,?,?,?)";
+	private static final String SQL_WAYPOINT_EDIT = "UPDATE WpWaypoints SET description = ?, loc_x = ?, loc_y = ?, loc_z = ? WHERE name = ?";
 	private static final String SQL_WAYPOINT_DELETE = "DELETE FROM WpWaypoints WHERE name = ?";
 	private static final String SQL_WAYPOINT_FIND_ONE = "SELECT * FROM WpWaypoints WHERE name = ?";
 	private static final String SQL_WAYPOINT_FIND_ALL = "SELECT * FROM WpWaypoints";
@@ -51,7 +52,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 	}
 	
 	@Override
-	public void add(Waypoint waypoint) {
+	public boolean add(Waypoint waypoint) {
 		try {
 			PreparedStatement ps = dbConn.prepareStatement(SQL_WAYPOINT_ADD);
 			ps.setString(1, waypoint.getName());
@@ -62,29 +63,45 @@ public class WaypointStorageSQL implements WaypointStorage {
 			ps.setDouble(6, waypoint.getLocation().getY());
 			ps.setDouble(7, waypoint.getLocation().getZ());
 			if (ps.executeUpdate() == 1) {
-				waypoint.getOwner().sendMessage("Successfully created waypoint '" + ChatColor.AQUA + waypoint.getName() + ChatColor.WHITE + "'!");
-			} else {
-				waypoint.getOwner().sendMessage(ChatColor.RED + "There is already a waypoint with that name.");
+				return true;
 			}
 		} catch (SQLException e) {
-			waypoint.getOwner().sendMessage(ChatColor.RED + "There was a problem creating the waypoint.");
 			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
 		}
-
+		return false;
+	}
+	
+	@Override
+	public boolean edit(Waypoint waypoint, String newDescription, Location newLocation) {
+		try {
+			PreparedStatement ps = dbConn.prepareStatement(SQL_WAYPOINT_EDIT);
+			ps.setString(1, newDescription);
+			ps.setDouble(2, newLocation.getX());
+			ps.setDouble(3, newLocation.getY());
+			ps.setDouble(4, newLocation.getZ());
+			ps.setString(5, waypoint.getName());
+			if (ps.executeUpdate() == 1) {
+				return true;
+			}
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
+		}
+		return false;
 	}
 
 	@Override
-	public void delete(Waypoint waypoint) {
+	public boolean delete(Waypoint waypoint) {
 		PreparedStatement ps;
 		try {
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_DELETE);
 			ps.setString(1, waypoint.getName());
 			if (ps.executeUpdate() == 1) {
-				waypoint.getOwner().sendMessage("Successfully deleted waypoint '" + ChatColor.AQUA + waypoint.getName() + ChatColor.WHITE + "'!");
+				return true;
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);
 		}
+		return false;
 	}
 
 	@Override
@@ -94,8 +111,14 @@ public class WaypointStorageSQL implements WaypointStorage {
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ONE);
 			ps.setString(1, name);
 			ResultSet rs = ps.executeQuery();
+			Waypoint wp = null;
 			if (rs.next()) {
-				return Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z"));
+				wp = Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z"));
+			}
+			if (rs.next() || wp == null) {
+				throw new WaypointNotFoundException();
+			} else {
+				return wp;
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);

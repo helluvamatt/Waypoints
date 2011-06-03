@@ -1,5 +1,7 @@
 package com.schneenet.minecraft.waypoints.storage;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -41,6 +43,31 @@ public class Waypoint {
 		return this.mLocation;
 	}
 	
+	/**
+	 * Warp the specified player to this waypoint
+	 * @param p Player
+	 */
+	public void warp(Player p) {
+		Chunk chunk = this.mWorld.getChunkAt(this.mLocation);
+		if (mWorld.isChunkLoaded(chunk)) {
+			mWorld.loadChunk(chunk);
+		}
+		p.teleport(this.mLocation);
+		p.sendMessage(ChatColor.GREEN + "This is '" + ChatColor.AQUA + this.mName + ChatColor.GREEN + "'.");
+	}
+	
+	/**
+	 * Build a waypoint from basic datatypes
+	 * @param s Server
+	 * @param name Name of waypoint
+	 * @param description Description of waypoint
+	 * @param owner Owner's username
+	 * @param world World name
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @param z Z coordinate
+	 * @return Waypoint object
+	 */
 	public static Waypoint build(Server s, String name, String description, String owner, String world, double x, double y, double z) {
 		return new Waypoint(
 				name,
@@ -50,6 +77,23 @@ public class Waypoint {
 				new Location(s.getWorld(world), x, y, z)
 				);
 		
+	}
+	
+	/**
+	 * Concatenate the rest of the arguments into a single space-delimited string starting at start
+	 * @param args Array of Strings to be concatenated
+	 * @param start Start at this element
+	 * @return Concatenated string
+	 */
+	public static String buildString(String[] args, int start) {
+		StringBuilder wpName = new StringBuilder();
+		for (int i = start; i < args.length; i++) {
+			wpName.append(args[i]);
+			if (i < (args.length - 1)) {
+				wpName.append(' ');
+			}
+		}
+		return wpName.toString();
 	}
 	
 }
