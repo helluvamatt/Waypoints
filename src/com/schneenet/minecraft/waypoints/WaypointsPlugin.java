@@ -284,7 +284,7 @@ public class WaypointsPlugin extends JavaPlugin {
 				// CMD: /waypoint
 				// ACTION: Show what waypoint is currently selected (if any) or show helpful usage messages
 				boolean canList = handler.has(player, "waypoints.list");
-				boolean canTp = handler.has(player, "waypoints.goto");
+				boolean canTp = handler.has(player, "waypoints.teleport");
 				if (handler.has(player, "waypoints.create")) {
 					Waypoint waypoint = this.selectedWaypoints.get(player);
 					if (waypoint != null) {
