@@ -95,7 +95,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 			ps.setString(1, name);
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				return Waypoint.build(server, rs.getString("name"), rs.getString("desc"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z"));
+				return Waypoint.build(server, rs.getString("name"), rs.getString("description"), rs.getString("owner"), rs.getString("world"), rs.getDouble("loc_x"), rs.getDouble("loc_y"), rs.getDouble("loc_z"));
 			}
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "[WaypointStorageSQL] " + e.getMessage(), e);

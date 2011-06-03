@@ -44,7 +44,7 @@ public class WaypointsPlugin extends JavaPlugin {
 	public void onDisable() {
 		if (storage != null)
 			storage.save();
-		logger.info(name + " v" + version + " shut down successfully.");
+		logger.info("[" + name + "] v" + version + " shut down successfully.");
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public class WaypointsPlugin extends JavaPlugin {
 				}
 			}
 			List<Waypoint> list = storage.findAllPage(page, size);
-			sender.sendMessage(ChatColor.DARK_GREEN + "Waypoints" + ChatColor.WHITE + " -------------------");
+			sender.sendMessage(ChatColor.DARK_GREEN + "Waypoints" + ChatColor.WHITE + " -----------------------------");
 			if (!list.isEmpty()) {
 				Iterator<Waypoint> iter = list.iterator();
 				while (iter.hasNext()) {
@@ -174,9 +174,8 @@ public class WaypointsPlugin extends JavaPlugin {
 		Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
 		if (handler == null) {
 			if (permissionsPlugin != null) {
-
 				handler = ((Permissions) permissionsPlugin).getHandler();
-				logger.info("Permissions " + Permissions.version + " (" + Permissions.codename + ") found. Using it for permissions.");
+				logger.info("[" + name + "] Permissions " + permissionsPlugin.getDescription().getVersion() + " (" + Permissions.codename + ") found. Using it for permissions.");
 			}
 
 		}
