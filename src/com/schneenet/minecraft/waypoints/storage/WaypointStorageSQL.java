@@ -41,7 +41,6 @@ public class WaypointStorageSQL implements WaypointStorage {
 	
 	private static Dbms dbms;
 	private static DataSource dbSource;
-	private static Connection dbConn;
 	private static Logger logger;
 	private static Server server;
 
@@ -54,6 +53,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 	@Override
 	public boolean add(Waypoint waypoint) {
 		try {
+			Connection dbConn = dbSource.getConnection();
 			PreparedStatement ps = dbConn.prepareStatement(SQL_WAYPOINT_ADD);
 			ps.setString(1, waypoint.getName());
 			ps.setString(2, waypoint.getOwner().getName());
@@ -74,6 +74,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 	@Override
 	public boolean edit(Waypoint waypoint, String newDescription, Location newLocation) {
 		try {
+			Connection dbConn = dbSource.getConnection();
 			PreparedStatement ps = dbConn.prepareStatement(SQL_WAYPOINT_EDIT);
 			ps.setString(1, newDescription);
 			ps.setDouble(2, newLocation.getX());
@@ -93,6 +94,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 	public boolean delete(Waypoint waypoint) {
 		PreparedStatement ps;
 		try {
+			Connection dbConn = dbSource.getConnection();
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_DELETE);
 			ps.setString(1, waypoint.getName());
 			if (ps.executeUpdate() == 1) {
@@ -108,6 +110,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 	public Waypoint find(String name) throws WaypointNotFoundException {
 		PreparedStatement ps;
 		try {
+			Connection dbConn = dbSource.getConnection();
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ONE);
 			ps.setString(1, name);
 			ResultSet rs = ps.executeQuery();
@@ -131,6 +134,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
 		PreparedStatement ps;
 		try {
+			Connection dbConn = dbSource.getConnection();
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ALL);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -147,6 +151,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
 		PreparedStatement ps;
 		try {
+			Connection dbConn = dbSource.getConnection();
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_ALL_PAGE);
 			ps.setInt(1, size);
 			ps.setInt(2, (page - 1) * size);
@@ -165,6 +170,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 		ArrayList<Waypoint> list = new ArrayList<Waypoint>();
 		PreparedStatement ps;
 		try {
+			Connection dbConn = dbSource.getConnection();
 			ps = dbConn.prepareStatement(SQL_WAYPOINT_FIND_USER);
 			ps.setString(1, player.getName());
 			ResultSet rs = ps.executeQuery();
@@ -205,7 +211,7 @@ public class WaypointStorageSQL implements WaypointStorage {
 			throw new Exception("Unable to load SQL Driver!", e);
 		}
 		dbSource = dbms.getDataSource(username, password, uri);
-		dbConn = dbSource.getConnection();
+		Connection dbConn = dbSource.getConnection();
 		Statement stmt = dbConn.createStatement();
 		stmt.addBatch(SQL_WAYPOINTS_TABLE_CREATE);
 		stmt.executeBatch();

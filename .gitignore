@@ -4,6 +4,10 @@ bin/*
 # Ignore libraries (that can be obtained elsewhere)
 lib/*
 
+# Ignore archives
+*.jar
+*.zip
+
 # Ignore Eclipse Stuff (Because it contains stuff specific to one machine)
 .settings/*
 .classpath
