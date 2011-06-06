@@ -2,7 +2,8 @@
 
 Create points of interest (POIs) with signs or a command in game, teleport back to them, and show them off on Minecraft Overviewer!
 
-[http://minecraft.schneenet.com](http://minecraft.schneenet.com)
+<http://minecraft.schneenet.com>
+<http://forums.bukkit.org/threads/tp-web-waypoints-v0-9-create-pois-to-add-to-minecraft-overviewer-818.19698/>
 
 #### Features
 
