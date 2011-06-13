@@ -1,6 +1,6 @@
 name: Waypoints
 main: com.schneenet.minecraft.waypoints.WaypointsPlugin
-version: 0.1
+version: 0.9.1
 authors:
     - helluvamatt
 website: http://minecraft.schneenet.com

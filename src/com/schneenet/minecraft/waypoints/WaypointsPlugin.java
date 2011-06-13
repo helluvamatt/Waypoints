@@ -322,7 +322,7 @@ public class WaypointsPlugin extends JavaPlugin {
 		if (handler == null) {
 			if (permissionsPlugin != null) {
 				handler = ((Permissions) permissionsPlugin).getHandler();
-				logger.info("[" + name + "] Permissions " + permissionsPlugin.getDescription().getVersion() + " (" + Permissions.codename + ") found. Using it for permissions.");
+				logger.info("[" + name + "] " + permissionsPlugin.getDescription().getName() + " v" + permissionsPlugin.getDescription().getVersion() + " found. Using it for permissions.");
 			}
 
 		}
